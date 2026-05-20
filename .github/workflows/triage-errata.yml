@@ -1,0 +1,80 @@
+name: Triage errata
+
+# Auto-triage for incoming errata reports. GitHub itself handles account
+# sign-in, rate limiting, and spam/abuse detection — this workflow only
+# labels reports by category and flags ones that arrive without enough
+# detail to act on.
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label and completeness check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+
+            // Issue forms render each field as a "### Label" heading
+            // followed by the value. Pull a field's value by heading.
+            const section = (heading) => {
+              const re = new RegExp(
+                '### ' + heading + '\\s*\\n+([\\s\\S]*?)(?=\\n### |$)',
+                'i',
+              );
+              const m = body.match(re);
+              return m ? m[1].trim() : '';
+            };
+
+            const labels = new Set(['erratum', 'needs-triage']);
+
+            const categoryLabel = {
+              'Unsourced statistic': 'statistic',
+              'Non-runnable prompt': 'prompt',
+              'Broken citation': 'citation',
+              'Case study that no longer holds': 'case-study',
+              'Voice or evidence drift': 'voice',
+              'Typo or broken internal link': 'typo',
+            };
+            const category = section('Category');
+            if (categoryLabel[category]) labels.add(categoryLabel[category]);
+
+            // The form marks these required, but guard against thin or
+            // bypassed submissions all the same.
+            const tooThin = (s) =>
+              !s || s === '_No response_' || s.length < 15;
+            const incomplete =
+              tooThin(section('What is wrong')) ||
+              tooThin(section('What you believe is correct'));
+
+            if (incomplete) {
+              labels.add('needs-more-info');
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issue.number,
+                body: [
+                  'Thanks for the report. To triage this as an erratum, two fields need a little more detail:',
+                  '',
+                  '- **What is wrong** — describe the specific issue (quote the statistic, name the prompt failure).',
+                  '- **What you believe is correct** — your suggested fix or the working source.',
+                  '',
+                  'Edit the issue to add the missing detail and it moves into the triage queue.',
+                ].join('\n'),
+              });
+            }
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: issue.number,
+              labels: [...labels],
+            });

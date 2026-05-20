@@ -1,0 +1,68 @@
+name: Erratum report
+description: Flag an unsourced statistic, a non-runnable prompt, a broken citation, or a case study that has changed shape.
+title: "[Erratum]: "
+labels: ["erratum", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for holding the Playbook to its standards. The fields marked required keep triage fast — substantive corrections ship within sixty days.
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What kind of report is this?
+      options:
+        - Unsourced statistic
+        - Non-runnable prompt
+        - Broken citation
+        - Case study that no longer holds
+        - Voice or evidence drift
+        - Typo or broken internal link
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Where in the Playbook
+      description: Chapter, page, prompt slug, or URL — be as specific as you can.
+      placeholder: e.g. Chapter 4 "Forecasting demand", or /app/prompts/audience-brief
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong
+      description: Describe the issue. For a statistic, quote the number. For a prompt, name the failure.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: What you believe is correct
+      description: Your suggested fix, the corrected figure, or the working source.
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source or evidence
+      description: A named, dated source that supports your correction. Strengthens a statistic or citation report.
+    validations:
+      required: false
+  - type: input
+    id: credit
+    attributes:
+      label: Credit name (optional)
+      description: The name to credit on /updates if this fix ships. Leave blank to stay anonymous.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: This is an erratum about the Playbook's content — not a support question or a discussion topic.
+          required: true
+        - label: I have searched existing issues and this has not already been reported.
+          required: true

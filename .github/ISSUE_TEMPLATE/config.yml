@@ -1,0 +1,7 @@
+# Only templated errata reports may be filed — free-text blank issues are
+# disabled so every report arrives with the fields triage needs.
+blank_issues_enabled: false
+contact_links:
+  - name: A question, not an erratum?
+    url: https://promptprofits.tech/about
+    about: Questions about which play to start with, coverage, or licensing belong on the site — start at /about, then email the author.
